@@ -1,0 +1,173 @@
+version: 1
+
+# overrides:
+#   altEngine: vectorbt
+
+search:
+  algo: bayes
+  n_trials: 1000
+  seed: 42
+  top_k: 10
+  dataset_executor: process
+  allow_sqlite_parallel: false   # true=병렬 허용을 명시, false=병렬 유지하되 잠금 충돌 시 자동 재시도(경고 출력)
+  # 기본 병렬: 스토리지 타입에 맞춰 run.py에서 CPU 코어 수 기반으로 자동 설정됩니다.
+  storage_url_env: OPTUNA_STORAGE   # 외부 RDB URL을 환경변수로 전달하면 SQLite 대신 사용합니다.
+  storage_pool_size: 8                  # PostgreSQL 풀 커넥션 수 (기본 8)
+  storage_max_overflow: 16              # 풀 초과 시 임시 커넥션 수
+  storage_pool_timeout: 30              # 풀에서 커넥션을 기다리는 최대 초 (0=무제한)
+  storage_pool_recycle: 1800            # 커넥션 재생성 주기(초)
+  storage_connect_timeout: 10           # DB 커넥션 시도 타임아웃(초)
+  storage_statement_timeout_ms: 300000  # 쿼리 타임아웃(밀리초). 0 또는 비우면 비활성화
+  storage_isolation_level: READ COMMITTED  # PostgreSQL 권장 격리 수준
+  diversify:
+    enabled: true
+    similarity_threshold: 0.9   # 최근 트라이얼과 90% 이상 동일하면 정체로 간주
+    max_consecutive: 6          # 연속 6회 이상 반복되면 강제 점프
+    jump_trials: 3              # 큐에 주입할 랜덤/돌연변이 후보 수
+    history_bias: 0.4           # 일부는 최근 성공 파라미터 주변을 탐색
+    timeframe_cycle:            # 1분 5회 → 3분 3회 → 5분 1회 루프 예시
+      - timeframe: "1m"
+        repeat: 5
+      - timeframe: "3m"
+        repeat: 3
+      - timeframe: "5m"
+        repeat: 1
+
+# === 엔진/성능 옵션 ===
+useNumba: true          # Numba JIT 사용 (없으면 기본 false)
+vectorizedCross: true   # 모멘텀 교차 사전계산(이미 기본 true 권장)
+strictStartDate: false  # 데이터 시작으로 자동 보정 ON
+logNoTradeReasons: false
+
+objective:
+  # === 기본룰: 전체 자산(TotalAssets) 중심 ===
+  # ProfitFactor와 Sortino 지수는 사용하지 않고 총 자산 잔고를 최우선으로 평가합니다.
+  - name: TotalAssets
+    weight: 1.0
+  - name: Trades
+    weight: 0.2
+  # --- 토글 시작: 최대 손실폭(MaxDD) 목표 추가 ---
+  - name: MaxDD
+    goal: minimize  # MaxDD는 낮을수록 좋으니까 'minimize'로 설정
+    weight: 0.7     # 이 가중치가 높을수록 DD가 낮은 안정적인 전략을 더 선호하게 돼
+                    # (Trades 등 다른 가중치와의 상대값으로 균형이 결정되므로 동시에 조정 가능)
+  # --- 토글 끝 ---
+constraints:
+  min_trades_test: 50   # 최소 거래 수. 거래수가 50 미만이면 학습 점수에 반영하지 않습니다.
+  max_dd_pct: 70        # MaxDD 70% 초과면 패널티
+
+space:
+# === 스퀴즈 모멘텀 전략 최적화 공간 ===
+
+  # --- 1. 핵심 오실레이터 설정 ---
+  # 모멘텀 오실레이터 길이(oscLen)와 신호 길이(signalLen)는 회귀 및 스무딩 길이를 결정하며
+  # 스퀴즈 감지 파라미터와는 독립적으로 작동합니다.
+  oscLen:         { type: int,   min: 10,  max: 30, step: 1 }
+  signalLen:      { type: int,   min: 2,   max: 7, step: 1 }
+  # 볼린저 밴드 길이/배수 (오실레이터 계산에 사용)
+  bbLen:          { type: int,   min: 5,  max: 30, step: 1 }
+  bbMult:         { type: float, min: 1.0, max: 3.0, step: 0.1 }
+
+  # --- 2. 스퀴즈 감지용 KC 채널 ---
+  # Keltner Channel(KC) 파라미터로 스퀴즈를 감지합니다.  모멘텀 계산 스타일은 `momStyle`
+  # 파라미터를 통해 선택됩니다.  KC 스타일은 최고가/최저가의 평균을 기준으로 계산하고,
+  # AVG 스타일은 볼린저밴드 중간선과 KC 평균선의 평균을 사용하며, Deluxe 스타일은
+  # hl2 기반 중간선(최고/최저 기반)과 볼린저 중간선을 평균해 사용합니다.  모든 스타일은
+  # ATR(켈트너 길이)로 정규화되어 모멘텀 스케일을 일관되게 맞춥니다.
+  kcLen:          { type: int,   min: 5,  max: 40, step: 1 }
+  kcMult:         { type: float, min: 1.0, max: 2.5, step: 0.1 }
+
+  # --- 3. 방향성 플럭스 & 기준선 옵션 ---
+  fluxLen:        { type: int,   min: 5,  max: 30, step: 1 }
+  fluxSmoothLen:  { type: int,   min: 1,   max: 10,  step: 1 }
+  fluxDeadzone:   { type: float, min: 0.0, max: 40.0, step: 1.0 }
+  useFluxHeikin:  { type: bool }
+  useModFlux:     { type: bool }
+  # NOTE: 문자열 파라미터는 단일 값만 허용되며 리스트/튜플 형태 입력은 오류로 처리됩니다.
+  basisStyle:     { type: choice, values: [KC, AVG, Deluxe, Mod] }
+  compatMode:     { type: bool }
+  autoThresholdScale: { type: bool }
+  useNormClip:    { type: bool }
+  normClipLimit:  { type: float, min: 100.0, max: 600.0, step: 10.0 }
+  maType:         { type: choice, values: [SMA, EMA, HMA] }
+
+  # --- 4. 동적 임계값 및 진입 조건 ---
+  useDynamicThresh:     { type: bool }
+  useSymThreshold:      { type: bool }
+  statThreshold:        { type: float, min: 30.0, max: 70.0, step: 2.0 }
+  buyThreshold:         { type: float, min: 30.0, max: 70.0, step: 2.0 }
+  sellThreshold:        { type: float, min: 30.0, max: 70.0, step: 2.0 }
+  dynLen:               { type: int,   min: 10,  max: 60, step: 1 }
+  dynMult:              { type: float, min: 0.8, max: 3.0, step: 0.1 }
+
+  # --- 5. 청산 로직 ---
+  exitOpposite:   { type: bool }
+  useMomFade:     { type: bool }
+  # 모멘텀 페이드 기준은 오실레이터가 신호선과 교차하며 0선을 통과한 후 모멘텀의 절대값이 최소 임계치를 넘을 때 발생합니다.
+  momFadeMinAbs:  { type: float, min: 0.0, max: 80.0, step: 1.0, requires: useMomFade }
+  useChandelierExit: { type: bool }
+  chandelierLen:     { type: int, min: 5, max: 50, step: 1, requires: useChandelierExit }
+  chandelierMult:    { type: float, min: 1.0, max: 4.0, step: 0.1, requires: useChandelierExit }
+  useSarExit:        { type: bool }
+  sarStart:          { type: float, min: 0.005, max: 0.05, step: 0.005, requires: useSarExit }
+  sarIncrement:      { type: float, min: 0.005, max: 0.05, step: 0.005, requires: useSarExit }
+  sarMaximum:        { type: float, min: 0.05, max: 0.4, step: 0.01, requires: useSarExit }
+
+  # --- 6. 레버리지 및 타임프레임 선택 ---
+  # 백테스트마다 고정된 레버리지를 사용합니다. 2~40배 범위에서 탐색합니다.
+  leverage: { type: int, min: 2, max: 40, step: 1 }
+  # 차트/데이터 로딩 기준 타임프레임은 1분으로 고정합니다.
+  chart_tf: { type: choice, choices: ["1m"], fixed: true }
+  # HTF 사용 여부는 현재 비활성화합니다.
+  use_htf: { type: bool, fixed: false }
+  # 엔트리 신호 계산용 LTF는 1m/3m/5m 중 무작위로 선택합니다.
+  entry_tf: { type: choice, choices: ["1m", "3m", "5m"] }
+
+  # --- 7. 손절(stop) 파라미터 ---
+  # 고정 % 손절 비율 (예: 2.0 = 2% 손절). 0이면 비활성화됩니다.
+  fixedStopPct: { type: float, min: 0.0, max: 10.0, step: 0.5 }
+  # ATR 기반 손절의 길이와 배수. 길이가 0이면 ATR 손절을 비활성화합니다.
+  atrStopLen: { type: int, min: 5, max: 40, step: 1 }
+  atrStopMult: { type: float, min: 0.5, max: 5.0, step: 0.1 }
+  stopChannelType: { type: choice, values: [None, BB, KC] }
+  stopChannelMult: { type: float, min: 1.0, max: 3.0, step: 0.2 }
+
+  # --- 8. 피라미딩 ---
+  usePyramiding: { type: bool }
+
+  # Note: Risk parameters (stop loss, position sizing) are not optimised
+  # here; adjust `risk` block below if you wish to customise leverage/slippage.
+
+risk:
+  fee_pct: 0.0006
+  slippage_ticks: 3
+
+# --- LLM assistant configuration ---
+# To enable Gemini‑assisted parameter proposals, set `enabled: true` and provide
+# a valid API key. The loader checks the following keys in order: `api_key`,
+# `api_key_file`/`api_key_path`, `api_key_env` (defaults to `GEMINI_API_KEY`),
+# and `.env` files located in the working directory, repository root, or
+# `config/.env`. The default model points to the latest Gemini 2.5 Flash
+# preview; override it if Google renames the model after the preview phase.
+# `initial_trials` controls how many Optuna trials are executed before
+# consulting the LLM. `top_n` determines how many top trials are summarised,
+# and `count` sets the number of candidate suggestions to enqueue.
+# `thinking_budget` is optional and applies only to Gemini 2.5 models, tuning
+# the internal reasoning cost (0 disables thinking; higher values allow deeper
+# reasoning but increase latency/cost).
+llm:
+  enabled: true
+  api_key_env: GEMINI_API_KEY
+  # api_key: "..."               # 직접 입력 (권장 X)
+  # api_key_file: ~/.secrets/gemini.key
+  model: gemini-2.5-pro
+  fallback_models:
+    - gemini-2.5-flash
+    - gemini-2.0-flash
+    - gemini-1.5-flash
+  top_n: 20
+  count: 5
+  initial_trials: 20
+  refresh_trials: 100        # 완료된 트라이얼 50회마다 Gemini 후보를 재요청합니다.
+  refresh_count: 5          # 재요청 시 큐에 추가할 최대 후보 수
+  thinking_budget: 2048
