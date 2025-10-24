@@ -1,0 +1,23 @@
+2025-10-22 03:15:20,776 [INFO] optimize: Writing outputs to D:\OneDrive - usk.ac.kr\backtest\251022\0315\1,3,5merged,Btc
+2025-10-22 03:15:20,779 [INFO] optimize: Optuna storage backend External RDB (source=env:OPTUNA_STORAGE, url=postgresql+psycopg2://postgres:***@127.0.0.1:5432/optuna)
+2025-10-22 03:15:20,779 [INFO] optimize: Basic-factor profile trimmed search space from 37 to 34 parameters
+2025-10-22 03:15:20,779 [INFO] optimize: Added timeframe parameter with values: 1m, 3m, 5m
+2025-10-22 03:15:20,779 [INFO] optimize: Optuna worker count set to 6.
+2025-10-22 03:15:20,779 [INFO] optimize: 데이터셋 병렬화가 불가능하므로 dataset_jobs 3 → 1 로 강제합니다.
+2025-10-22 03:15:20,779 [INFO] optimize: 데이터셋 병렬화가 없어 Optuna worker 6개를 유지합니다.
+2025-10-22 03:15:20,779 [INFO] optimize: 최종 병렬 전략: Optuna worker=6, dataset worker=1 (process executor)
+2025-10-22 03:15:21,107 [INFO] optimize: 중단하려면 백틱(`)을 세 번 입력한 뒤 Enter 키를 누르세요.
+2025-10-22 03:15:21,107 [INFO] optimize: Trial diversifier를 활성화합니다.
+2025-10-22 03:15:21,107 [INFO] optimize: Gemini 후보 새로고침 주기: 100 트라이얼마다 5개 추가
+2025-10-22 03:17:38,982 [INFO] optimize: ? ?  3/3000 (Trial 3 COMPLETE) TotalAssets=244.10, Liquidations=0.0, Score=86.53203915983595, Trades=72, Wins=10, WinRate=0.14, MaxDD=-0.40%, BandExit=ON(min=11)
+2025-10-22 03:17:40,248 [INFO] optimize: ? ?  4/3000 (Trial 4 COMPLETE) TotalAssets=500.00, Liquidations=0.0, Score=0.0, Trades=0, Wins=0, WinRate=0.00, MaxDD=0.00%, BandExit=ON(min=15)
+2025-10-22 03:17:41,794 [INFO] optimize: ? ?  4/3000 (Trial 1 COMPLETE) TotalAssets=548.20, Liquidations=0.0, Score=517.7693721231366, Trades=133, Wins=52, WinRate=0.39, MaxDD=-0.03%, BandExit=ON(min=2)
+2025-10-22 03:17:43,317 [INFO] optimize: ? ?  4/3000 (Trial 0 COMPLETE) TotalAssets=50766.11, Liquidations=0.0, Score=0.0, Trades=302, Wins=238, WinRate=0.79, MaxDD=-0.95%, BandExit=ON(min=15)
+2025-10-22 03:17:44,091 [INFO] optimize: ? ?  6/3000 (Trial 5 COMPLETE) TotalAssets=314.66, Liquidations=0.0, Score=149.79591374151516, Trades=592, Wins=149, WinRate=0.25, MaxDD=-0.31%, BandExit=ON(min=1)
+2025-10-22 03:17:44,123 [INFO] optimize: ? ?  6/3000 (Trial 2 PRUNED) TotalAssets=326.97, Liquidations=0.0, Score=0.0, Trades=25, Wins=3, WinRate=0.12, MaxDD=-0.30%, BandExit=OFF
+2025-10-22 03:18:50,482 [INFO] optimize: ? ?  7/3000 (Trial 9 PRUNED) TotalAssets=500.00, Liquidations=0.0, Score=0.0, Trades=0, Wins=0, WinRate=0.00, MaxDD=0.00%, BandExit=ON(min=15)
+2025-10-22 03:19:13,575 [INFO] optimize: ? ?  9/3000 (Trial 10 PRUNED) TotalAssets=285196.47, Liquidations=0.0, Score=0.0, Trades=768, Wins=566, WinRate=0.74, MaxDD=-1.00%, BandExit=OFF
+2025-10-22 03:19:14,482 [INFO] optimize: ? ?  9/3000 (Trial 11 PRUNED) TotalAssets=500.00, Liquidations=0.0, Score=0.0, Trades=0, Wins=0, WinRate=0.00, MaxDD=0.00%, BandExit=ON(min=17)
+2025-10-22 03:20:03,027 [INFO] optimize: ? ?  10/3000 (Trial 6 PRUNED) TotalAssets=495.67, Liquidations=0.0, Score=0.0, Trades=1, Wins=0, WinRate=0.00, MaxDD=-0.01%, BandExit=OFF
+2025-10-22 03:20:04,154 [INFO] optimize: ? ?  11/3000 (Trial 7 PRUNED) TotalAssets=249.95, Liquidations=0.0, Score=91.1093023948856, Trades=68, Wins=9, WinRate=0.13, MaxDD=-0.40%, BandExit=ON
+2025-10-22 03:20:05,325 [INFO] optimize: ? ?  12/3000 (Trial 12 PRUNED) TotalAssets=36138.87, Liquidations=0.0, Score=0.0, Trades=571, Wins=380, WinRate=0.67, MaxDD=-0.96%, BandExit=OFF

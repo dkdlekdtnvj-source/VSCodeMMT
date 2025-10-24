@@ -1,0 +1,11 @@
+2025-10-22 12:48:09,444 [INFO] optimize: Writing outputs to D:\OneDrive - usk.ac.kr\backtest\251022\1248\1m,Btc
+2025-10-22 12:48:09,473 [INFO] optimize: Study registry D:\OneDrive - usk.ac.kr\문서\가게수정스퀴즈\studies\BTCUSDT_1m\storage.json supplied defaults for: storage_url
+2025-10-22 12:48:09,473 [INFO] optimize: Optuna storage backend External RDB (source=config, url=postgresql+psycopg2://postgres:***@127.0.0.1:5432/optuna)
+2025-10-22 12:48:09,473 [INFO] optimize: Basic-factor profile trimmed search space from 37 to 34 parameters
+2025-10-22 12:48:09,474 [INFO] optimize: Optuna worker count set to 6.
+2025-10-22 12:48:09,474 [INFO] optimize: 데이터셋 병렬화가 불가능하므로 dataset_jobs 12 → 1 로 강제합니다.
+2025-10-22 12:48:09,474 [INFO] optimize: 데이터셋 병렬화가 없어 Optuna worker 6개를 유지합니다.
+2025-10-22 12:48:09,475 [INFO] optimize: 최종 병렬 전략: Optuna worker=6, dataset worker=1 (process executor)
+2025-10-22 12:48:09,898 [INFO] optimize: 중단하려면 백틱(`)을 세 번 입력한 뒤 Enter 키를 누르세요.
+2025-10-22 12:48:09,898 [INFO] optimize: Trial diversifier를 활성화합니다.
+2025-10-22 12:48:09,899 [INFO] optimize: Gemini 후보 새로고침 주기: 100 트라이얼마다 5개 추가

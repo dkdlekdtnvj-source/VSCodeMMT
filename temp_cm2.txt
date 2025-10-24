@@ -1,0 +1,120 @@
+        else:
+            dd_pct_candidate = _coerce_float(metrics.get("DrawdownPct"))
+            if dd_pct_candidate is not None:
+                drawdown_candidates.append(float(dd_pct_candidate))
+
+        def _weight_component(value: Optional[float]) -> float:
+            if value is None or not np.isfinite(value):
+                return 0.0
+            return max(float(value), 0.0)
+
+        trades_component = _weight_component(trades_value)
+        assets_component = _weight_component(total_assets)
+        drawdown_component = abs(drawdown_value) if drawdown_value is not None else 0.0
+
+        trade_scale = 1.0 + float(np.log1p(trades_component))
+        asset_scale = 1.0 + float(np.log1p(assets_component))
+        drawdown_scale = 1.0 + float(drawdown_component)
+        weight = (trade_scale * asset_scale) / drawdown_scale if drawdown_scale else 0.0
+        if not np.isfinite(weight) or weight <= 0.0:
+            weight = 1.0
+        weight_factors.append(weight)
+
+        liquidation_value = _coerce_float(metrics.get("Liquidations"))
+        if liquidation_value is not None:
+            total_liquidations += liquidation_value
+
+        band_exit_value = _coerce_float(metrics.get("BandExitCount"))
+        if band_exit_value is not None:
+            band_exit_total += band_exit_value
+
+        ruin_detected = ruin_detected or bool(metrics.get("Ruin"))
+
+        if not simple_mode:
+            trades = metrics.get("TradesList")
+            if isinstance(trades, list):
+                combined_trades.extend(trades)
+
+    if not weight_factors:
+        weight_factors = [1.0] * len(metric_list)
+
+    def _weighted_mean(values: Sequence[Optional[float]]) -> Optional[float]:
+        total_weight = 0.0
+        total_value = 0.0
+        for value, weight in zip(values, weight_factors):
+            if value is None or not np.isfinite(value):
+                continue
+            if weight <= 0.0 or not np.isfinite(weight):
+                continue
+            total_weight += weight
+            total_value += float(value) * weight
+        if total_weight > 0.0:
+            return float(total_value / total_weight)
+        fallback = [float(v) for v in values if v is not None and np.isfinite(v)]
+        if fallback:
+            return float(np.mean(fallback))
+        return None
+
+    def _fallback_mean(values: Sequence[Optional[float]]) -> Optional[float]:
+        cleaned = [float(value) for value in values if value is not None and np.isfinite(value)]
+        if cleaned:
+            return float(np.mean(cleaned))
+        return None
+
+    merged_returns = (
+        pd.concat(combined_returns, axis=0).sort_index() if combined_returns else pd.Series(dtype=float)
+    )
+
+    if simple_mode:
+        returns_clean = merged_returns.replace([np.inf, -np.inf], np.nan).fillna(0.0)
+        if returns_clean.empty:
+            net_profit = 0.0
+        else:
+            equity = equity_curve_from_returns(returns_clean, initial=1.0)
+            net_profit = (
+                float((equity.iloc[-1] - equity.iloc[0]) / equity.iloc[0])
+                if len(equity) > 1
+                else 0.0
+            )
+        if returns_clean.empty and not net_profit:
+            fallback_candidates = []
+            for metrics in metric_list:
+                candidate = metrics.get("NetProfit")
+                if candidate is None:
+                    candidate = metrics.get("TotalReturn")
+                fallback_candidates.append(_coerce_float(candidate))
+            fallback_weighted = _weighted_mean(fallback_candidates)
+            if fallback_weighted is None:
+                fallback_weighted = _fallback_mean(fallback_candidates)
+            if fallback_weighted is not None:
+                net_profit = float(fallback_weighted)
+
+        aggregated: Dict[str, float] = {
+            "NetProfit": net_profit,
+            "TotalReturn": net_profit,
+            "Trades": float(sum(_coerce_float(m.get("Trades")) or 0.0 for m in metric_list)),
+            "Wins": float(sum(_coerce_float(m.get("Wins")) or 0.0 for m in metric_list)),
+            "Losses": float(sum(_coerce_float(m.get("Losses")) or 0.0 for m in metric_list)),
+            "GrossProfit": float(sum(_coerce_float(m.get("GrossProfit")) or 0.0 for m in metric_list)),
+            "GrossLoss": float(sum(_coerce_float(m.get("GrossLoss")) or 0.0 for m in metric_list)),
+        }
+        avg_holds = [
+            val for val in (_coerce_float(m.get("AvgHoldBars")) for m in metric_list) if val is not None
+        ]
+        aggregated["AvgHoldBars"] = float(np.mean(avg_holds)) if avg_holds else 0.0
+        trades_total = aggregated.get("Trades", 0.0)
+        wins_total = aggregated.get("Wins", 0.0)
+        aggregated["WinRate"] = float(wins_total / trades_total) if trades_total else 0.0
+        max_losses = [
+            int(round(_coerce_float(m.get("MaxConsecutiveLosses")) or 0.0))
+            for m in metric_list
+        ]
+        aggregated["MaxConsecutiveLosses"] = float(max(max_losses)) if max_losses else 0.0
+        aggregated["SimpleMetricsOnly"] = True
+    else:
+        combined_trades.sort(
+            key=lambda trade: (
+                getattr(trade, "entry_time", None),
+                getattr(trade, "exit_time", None),
+            )
+        )

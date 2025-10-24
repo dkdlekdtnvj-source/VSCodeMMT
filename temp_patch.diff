@@ -1,0 +1,39 @@
+*** Begin Patch
+*** Update File: optimize/main_loop.py
+@@
+ def _enforce_exit_guards(
+     params: Mapping[str, object], *, context: Optional[str] = None
+ ) -> Dict[str, object]:
+-    """Ensure at least one exit mechanism remains enabled.
+-
+-     ? ????? ? ?(`exitOpposite`)?? ???
+-    (`useMomFade`) ?  ?  ??????  ????
+-    Seed ? ? ?????  ???? ?
+-    ???????? ????  ?????? ??
+-     ???, ????? ``False``????? ? ???
+-    ????
+-
+-    Args:
+-        params: ? ? .
+-        context:  ?????????? ``"trial #5"``).
+-
+-    Returns:
+-        ?? ??  ???``True`` ???? ?.
+-    """
++    """Ensure at least one exit mechanism remains enabled.
++
++    The strategy exposes two quick exit toggles: ``exitOpposite`` and
++    ``useMomFade``.  Historical runs assumed ``exitOpposite`` defaults to
++    ``True`` while ``useMomFade`` defaults to ``False``.  If a configuration
++    disables both switches simultaneously we silently flip
++    ``exitOpposite`` back to ``True`` to avoid leaving the strategy without
++    a hard exit.
++
++    Args:
++        params: Parameter dictionary provided by the optimiser.
++        context: Optional string describing where the guard is applied.
++
++    Returns:
++        Sanitised parameter dictionary with consistent exit toggles.
++    """
+*** End Patch

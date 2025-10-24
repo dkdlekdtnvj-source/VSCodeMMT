@@ -1,0 +1,20 @@
+[INFO] CLI --force-sqlite-serial 지정: Optuna worker를 1개로 강제합니다.
+[WARNING] LLM 사용이 활성화되었지만 환경변수 GEMINI_API_KEY 또는 api_key가 설정되지 않았습니다. 비활성화합니다.
+[INFO] 전체 지표 계산 경로를 사용합니다.
+[INFO] Preparing dataset BINANCE:DOGEUSDT 3m 2024-01-01->2025-09-26 (single timeframe)
+[INFO] Loading cached data from data\BINANCE_BINANCE_DOGEUSDT_3m_20240101_20250926.csv
+[INFO] Writing outputs to D:\OneDrive - usk.ac.kr\문서\backtest\251018\1819\3m,Doge
+[INFO] Optuna 스토리지 백엔드: SQLite (설정값, URL=sqlite:///studies/doge3m_optuna.db)
+[INFO] 기본 팩터 프로파일: 43→41개 파라미터로 탐색 공간을 축소합니다.
+[INFO] SQLite 직렬 강제 옵션으로 Optuna worker 6→1개 조정
+[INFO] 단일 티커/데이터셋 구성이라 데이터셋 병렬화를 비활성화하고 Optuna worker 1개를 유지합니다.
+[INFO] 최종 병렬 전략: Optuna worker=1 (우선), 데이터셋 worker=1 (process, 보조)
+[I 2025-10-18 18:19:42,613] A new study created in RDB with name: DOGEUSDT_3m_470e66_20251018_181942
+[INFO] 작업중지 키가 활성화되었습니다. 콘솔에서 백틱(`) 키를 빠르게 세 번 입력 후 Enter를 누르면 현재 작업을 중단하고 즉시 보고서를 생성합니다.
+[INFO] 탐색 다변화 보조 기능을 활성화합니다.
+[I 2025-10-18 18:20:37,591] Trial 0 finished with value: 0.0 and parameters: {'oscLen': 17, 'signalLen': 7, 'bbLen': 24, 'bbMult': 2.2, 'kcLen': 10, 'kcMult': 1.2, 'fluxLen': 6, 'fluxSmoothLen': 9, 'fluxDeadzone': 24.0, 'useFluxHeikin': True, 'useModFlux': True, 'basisStyle': 'Mod', 'compatMode': True, 'autoThresholdScale': False, 'useNormClip': False, 'normClipLimit': 280.0, 'maType': 'EMA', 'useDynamicThresh': False, 'useSymThreshold': True, 'statThreshold': 36.0, 'buyThreshold': 32.0, 'sellThreshold': 68.0, 'dynLen': 59, 'dynMult': 2.6, 'exitOpposite': True, 'useMomFade': True, 'momFadeMinAbs': 9.0, 'useChandelierExit': True, 'chandelierLen': 46, 'chandelierMult': 1.8, 'useSarExit': True, 'sarStart': 0.030000000000000002, 'sarIncrement': 0.030000000000000002, 'sarMaximum': 0.11, 'useBandExit': True, 'bandExitMinBars': 19, 'leverage': 36, 'fixedStopPct': 6.0, 'atrStopLen': 38, 'atrStopMult': 0.9, 'usePyramiding': True}. Best is trial 0 with value: 0.0.
+[INFO] 작업 진행상황 ＝＝＝＝＝＝ 1/2 (Trial 0 완료) TotalAssets=1388.06, Liquidations=0.0, Score=0.0, Trades=17, Wins=11, WinRate=0.65, MaxDD=-0.09%, BandExit=ON(min=19)
+[I 2025-10-18 18:21:18,092] Trial 1 finished with value: 0.0 and parameters: {'oscLen': 16, 'signalLen': 4, 'bbLen': 12, 'bbMult': 2.7, 'kcLen': 17, 'kcMult': 1.4, 'fluxLen': 19, 'fluxSmoothLen': 2, 'fluxDeadzone': 32.0, 'useFluxHeikin': False, 'useModFlux': True, 'basisStyle': 'AVG', 'compatMode': True, 'autoThresholdScale': True, 'useNormClip': True, 'normClipLimit': 260.0, 'maType': 'HMA', 'useDynamicThresh': True, 'useSymThreshold': True, 'statThreshold': 34.0, 'buyThreshold': 58.0, 'sellThreshold': 60.0, 'dynLen': 38, 'dynMult': 2.5, 'exitOpposite': False, 'useMomFade': True, 'momFadeMinAbs': 8.0, 'useChandelierExit': False, 'useSarExit': False, 'useBandExit': True, 'bandExitMinBars': 8, 'leverage': 31, 'fixedStopPct': 2.0, 'atrStopLen': 7, 'atrStopMult': 1.8, 'usePyramiding': False}. Best is trial 0 with value: 0.0.
+[INFO] 작업 진행상황 ＝＝＝＝＝＝ 2/2 (Trial 1 완료) TotalAssets=520.75, Liquidations=0.0, Score=0.0, Trades=2, Wins=1, WinRate=0.50, MaxDD=-0.08%, BandExit=ON(min=8)
+[INFO] Run complete. Outputs saved to D:\OneDrive - usk.ac.kr\문서\backtest\251018\1819\3m,Doge
+[INFO] 선택된 심볼: BINANCE:DOGEUSDT

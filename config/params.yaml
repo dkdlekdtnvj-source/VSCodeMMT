@@ -1,0 +1,217 @@
+version: 1
+overrides: null
+search:
+  algo: bayes
+  n_trials: 1000
+  seed: 42
+  top_k: 10
+  dataset_executor: process
+  allow_sqlite_parallel: false
+  storage_url_env: OPTUNA_STORAGE
+  storage_pool_size: 8
+  storage_max_overflow: 16
+  storage_pool_timeout: 30
+  storage_pool_recycle: 1800
+  storage_connect_timeout: 10
+  storage_statement_timeout_ms: 300000
+  storage_isolation_level: READ COMMITTED
+  diversify:
+    enabled: true
+    similarity_threshold: 0.9
+    max_consecutive: 6
+    jump_trials: 3
+    history_bias: 0.4
+useNumba: true
+vectorizedCross: true
+strictStartDate: false
+logNoTradeReasons: false
+objective:
+- name: TotalAssets
+  weight: 1.0
+- name: Trades
+  weight: 0.2
+- name: MaxDD
+  goal: minimize
+  weight: 0.7
+constraints:
+  min_trades_test: 50
+  max_dd_pct: 70
+space:
+  oscLen:
+    type: int
+    min: 10
+    max: 30
+    step: 1
+  signalLen:
+    type: int
+    min: 2
+    max: 7
+    step: 1
+  bbLen:
+    type: int
+    min: 5
+    max: 30
+    step: 1
+  bbMult:
+    type: float
+    min: 1.0
+    max: 3.0
+    step: 0.1
+  kcLen:
+    type: int
+    min: 5
+    max: 40
+    step: 1
+  kcMult:
+    type: float
+    min: 1.0
+    max: 2.5
+    step: 0.1
+  fluxLen:
+    type: int
+    min: 5
+    max: 30
+    step: 1
+  fluxSmoothLen:
+    type: int
+    min: 1
+    max: 10
+    step: 1
+  fluxDeadzone:
+    type: float
+    min: 0.0
+    max: 40.0
+    step: 1.0
+  useFluxHeikin:
+    type: bool
+  useModFlux:
+    type: bool
+  basisStyle:
+    type: choice
+    values:
+    - KC
+    - AVG
+    - Deluxe
+    - Mod
+  autoThresholdScale:
+    type: bool
+  useNormClip:
+    type: bool
+  normClipLimit:
+    type: float
+    min: 100.0
+    max: 600.0
+    step: 10.0
+  maType:
+    type: choice
+    values:
+    - SMA
+    - EMA
+    - HMA
+  useDynamicThresh:
+    type: bool
+  useSymThreshold:
+    type: bool
+  statThreshold:
+    type: float
+    min: 30.0
+    max: 70.0
+    step: 2.0
+  buyThreshold:
+    type: float
+    min: 30.0
+    max: 70.0
+    step: 2.0
+  sellThreshold:
+    type: float
+    min: 30.0
+    max: 70.0
+    step: 2.0
+  dynLen:
+    type: int
+    min: 10
+    max: 60
+    step: 1
+  dynMult:
+    type: float
+    min: 0.8
+    max: 3.0
+    step: 0.1
+  exitOpposite:
+    type: bool
+  useMomFade:
+    type: bool
+  momFadeMinAbs:
+    type: float
+    min: 0.0
+    max: 80.0
+    step: 1.0
+    requires: useMomFade
+  useSarExit:
+    type: bool
+  sarStart:
+    type: float
+    min: 0.005
+    max: 0.05
+    step: 0.005
+    requires: useSarExit
+  sarIncrement:
+    type: float
+    min: 0.005
+    max: 0.05
+    step: 0.005
+    requires: useSarExit
+  sarMaximum:
+    type: float
+    min: 0.05
+    max: 0.4
+    step: 0.01
+    requires: useSarExit
+  useBandExit:
+    type: bool
+  bandExitMinBars:
+    type: int
+    min: 0
+    max: 20
+    step: 1
+    requires: useBandExit
+  leverage:
+    type: int
+    min: 2
+    max: 40
+    step: 1
+  fixedStopPct:
+    type: float
+    min: 0.0
+    max: 10.0
+    step: 0.5
+  stopChannelType:
+    type: choice
+    values:
+    - None
+    - BB
+    - KC
+  stopChannelMult:
+    type: float
+    min: 1.0
+    max: 3.0
+    step: 0.2
+  usePyramiding:
+    type: bool
+risk:
+  fee_pct: 0.0006
+  slippage_ticks: 3
+llm:
+  enabled: true
+  api_key_env: GEMINI_API_KEY
+  model: gemini-2.5-pro
+  fallback_models:
+  - gemini-2.5-flash
+  - gemini-2.0-flash
+  - gemini-1.5-flash
+  top_n: 20
+  count: 8
+  initial_trials: 20
+  refresh_trials: 100
+  refresh_count: 8
+  thinking_budget: 2048

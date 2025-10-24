@@ -1,0 +1,29 @@
+    total_assets_values: List[Optional[float]] = []
+    available_values: List[Optional[float]] = []
+    savings_values: List[Optional[float]] = []
+    weight_factors: List[float] = []
+    total_liquidations = 0.0
+    band_exit_total = 0.0
+    drawdown_candidates: List[float] = []
+    ruin_detected = False
+    valid_flag = True
+
+    def _coerce_float(value: object) -> float | None:
+        try:
+            number = float(value)
+        except (TypeError, ValueError):
+            return None
+        if not np.isfinite(number):
+            return None
+        return float(number)
+
+    for metrics in metric_list:
+        returns = metrics.get("Returns")
+        if isinstance(returns, pd.Series):
+            combined_returns.append(returns)
+
+        valid_flag = valid_flag and bool(metrics.get("Valid", True))
+
+        total_assets = _coerce_float(metrics.get("TotalAssets"))
+        total_assets_values.append(total_assets)
+
